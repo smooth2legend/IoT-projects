@@ -1,0 +1,93 @@
+// Fire Fighting Robot Code with default forward movement
+// Author: Ajay's
+// === Pin Definitions ===
+// Motor control pins (L298N)
+#define IN1 4
+#define IN2 5
+#define IN3 6
+#define IN4 7
+
+// Flame sensor pins
+#define FLAME_LEFT A1
+#define FLAME_RIGHT A3
+
+// Water pump relay pin
+#define WATER_PUMP 2  
+
+// Relay logic (Assuming active LOW relay module)
+#define RELAY_ON  LOW
+#define RELAY_OFF HIGH
+
+void setup() {
+  // Motor pins
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  // Flame sensors with internal pull-up
+  pinMode(FLAME_LEFT, INPUT_PULLUP);
+  pinMode(FLAME_RIGHT, INPUT_PULLUP);
+
+  // Relay pin
+  pinMode(WATER_PUMP, OUTPUT);
+  digitalWrite(WATER_PUMP, RELAY_OFF);  // Ensure pump is OFF
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  int left = digitalRead(FLAME_LEFT);
+  int right = digitalRead(FLAME_RIGHT);
+
+  bool flameLeft = (left == LOW);    // Flame detected on left
+  bool flameRight = (right == LOW);  // Flame detected on right
+
+  if (flameLeft && flameRight) {
+    stopMotors();
+    digitalWrite(WATER_PUMP, RELAY_ON);  // Turn ON water pump
+    delay(5000);  // Spray for 5 seconds
+    digitalWrite(WATER_PUMP, RELAY_OFF); // Turn OFF water pump
+  }
+  else if (flameLeft) {
+    digitalWrite(WATER_PUMP, RELAY_OFF);
+    turnLeft();
+    delay(400);
+    stopMotors();
+  }
+  else if (flameRight) {
+    digitalWrite(WATER_PUMP, RELAY_OFF);
+    turnRight();
+    delay(400);
+    stopMotors();
+  }
+  else {
+    stopMotors();
+    digitalWrite(WATER_PUMP, RELAY_OFF);
+  }
+
+  delay(100);
+}
+
+// === Movement Functions ===
+
+void turnLeft() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+void turnRight() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+void stopMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
